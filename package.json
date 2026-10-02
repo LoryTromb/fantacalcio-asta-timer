@@ -1,0 +1,13 @@
+{
+  "name": "asta-fantacalcio-timer",
+  "version": "1.0.0",
+  "description": "Timer condiviso per aste del fantacalcio: ogni partecipante puo' rilanciare e resettare il timer per tutti.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}

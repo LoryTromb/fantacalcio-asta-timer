@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Asta Fantacalcio - Timer</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #171f31;
+    --panel-2: #1f2a42;
+    --border: #2b3755;
+    --text: #e8ecf5;
+    --muted: #8c97b3;
+    --accent: #ff7a1a;
+    --accent-2: #ffb020;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --shadow: rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  #app {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px var(--shadow);
+  }
+  .hidden { display: none !important; }
+
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .subtitle {
+    color: var(--muted);
+    text-align: center;
+    margin: 0 0 24px;
+    font-size: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+  }
+  input:focus { border-color: var(--accent); }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    color: #1a1200;
+    padding: 14px;
+    font-size: 16px;
+    margin-top: 16px;
+  }
+  .btn-primary:active { transform: translateY(1px); }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .topbar .me {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .topbar .me b { color: var(--text); }
+  .link-btn {
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: underline;
+    padding: 4px;
+  }
+
+  .timer-wrap {
+    text-align: center;
+    margin: 8px 0 20px;
+  }
+  .timer {
+    font-size: 72px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+    transition: color 0.2s ease;
+    color: var(--green);
+  }
+  .timer.warn { color: var(--accent-2); }
+  .timer.danger { color: var(--red); }
+  .timer-label {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .ended-banner {
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid var(--red);
+    color: #ff9b8f;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .rilancia-btn {
+    width: 100%;
+    background: linear-gradient(180deg, #ff5e3a, #d8331a);
+    color: white;
+    font-size: 22px;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 6px 0 #9c230f, 0 10px 20px rgba(216,51,26,0.4);
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+  }
+  .rilancia-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #9c230f, 0 4px 10px rgba(216,51,26,0.4);
+  }
+
+  .section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .duration-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .duration-row > div:first-child { flex: 1; }
+  .btn-secondary {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .last-bid {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .last-bid b { color: var(--accent-2); }
+
+  .history {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .history li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .history li:nth-child(odd) { background: var(--panel-2); }
+  .history li .who { color: var(--text); font-weight: 600; }
+
+  .pulse {
+    animation: pulse 0.5s ease;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <h1>Asta Fantacalcio</h1>
+    <p class="subtitle">Inserisci il tuo nome per partecipare</p>
+    <label for="nameInput">Il tuo nome</label>
+    <input type="text" id="nameInput" placeholder="Es. Lorenzo" maxlength="40" autocomplete="off" />
+    <button class="btn-primary" id="joinBtn">Entra</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="card hidden" id="mainCard">
+    <div class="topbar">
+      <div class="me">Ciao, <b id="meName"></b></div>
+      <button class="link-btn" id="changeNameBtn">cambia nome</button>
+    </div>
+
+    <div id="endedBanner" class="ended-banner hidden"></div>
+
+    <div class="timer-wrap">
+      <div class="timer" id="timerDisplay">--</div>
+      <div class="timer-label">secondi rimanenti</div>
+    </div>
+
+    <button class="rilancia-btn" id="rilanciaBtn">🔨 RILANCIA</button>
+
+    <div class="last-bid" id="lastBidLine"></div>
+
+    <div class="section">
+      <div class="duration-row">
+        <div>
+          <label for="durationInput">Durata timer (secondi)</label>
+          <input type="number" id="durationInput" min="1" max="36000" />
+        </div>
+        <button class="btn-secondary" id="setDurationBtn">Imposta</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <label>Storico rilanci</label>
+      <ul class="history" id="historyList"></ul>
+    </div>
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const loginCard = document.getElementById('loginCard');
+  const mainCard = document.getElementById('mainCard');
+  const nameInput = document.getElementById('nameInput');
+  const joinBtn = document.getElementById('joinBtn');
+  const changeNameBtn = document.getElementById('changeNameBtn');
+  const meName = document.getElementById('meName');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const endedBanner = document.getElementById('endedBanner');
+  const rilanciaBtn = document.getElementById('rilanciaBtn');
+  const lastBidLine = document.getElementById('lastBidLine');
+  const durationInput = document.getElementById('durationInput');
+  const setDurationBtn = document.getElementById('setDurationBtn');
+  const historyList = document.getElementById('historyList');
+
+  let myName = localStorage.getItem('fantacalcio_name') || '';
+  let serverOffset = 0; // serverNow - clientNow
+  let latest = { durationSeconds: 30, endTime: null, lastBidder: null, ended: false, history: [] };
+  let lastEndTimeSeen = null;
+
+  function showMain() {
+    loginCard.classList.add('hidden');
+    mainCard.classList.remove('hidden');
+    meName.textContent = myName;
+  }
+
+  function showLogin() {
+    mainCard.classList.add('hidden');
+    loginCard.classList.remove('hidden');
+    nameInput.value = myName || '';
+    nameInput.focus();
+  }
+
+  joinBtn.addEventListener('click', () => {
+    const v = nameInput.value.trim();
+    if (!v) { nameInput.focus(); return; }
+    myName = v.slice(0, 40);
+    localStorage.setItem('fantacalcio_name', myName);
+    showMain();
+  });
+
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinBtn.click();
+  });
+
+  changeNameBtn.addEventListener('click', showLogin);
+
+  rilanciaBtn.addEventListener('click', () => {
+    if (!myName) { showLogin(); return; }
+    socket.emit('bid', myName);
+  });
+
+  setDurationBtn.addEventListener('click', () => {
+    const v = parseInt(durationInput.value, 10);
+    if (!v || v < 1) return;
+    socket.emit('setDuration', v);
+  });
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  socket.on('state', (data) => {
+    serverOffset = data.serverNow - Date.now();
+    latest = data;
+
+    if (document.activeElement !== durationInput) {
+      durationInput.value = data.durationSeconds;
+    }
+
+    if (data.lastBidder) {
+      lastBidLine.innerHTML = `Ultimo rilancio: <b>${escapeHtml(data.lastBidder)}</b>`;
+    } else {
+      lastBidLine.textContent = 'Nessun rilancio ancora.';
+    }
+
+    historyList.innerHTML = '';
+    data.history.forEach((h) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="who">${escapeHtml(h.name)}</span><span>${formatTime(h.at)}</span>`;
+      historyList.appendChild(li);
+    });
+
+    if (data.endTime !== lastEndTimeSeen) {
+      lastEndTimeSeen = data.endTime;
+      timerDisplay.classList.remove('pulse');
+      void timerDisplay.offsetWidth;
+      timerDisplay.classList.add('pulse');
+    }
+
+    if (data.ended && data.lastBidder) {
+      endedBanner.textContent = `⏰ Tempo scaduto! Aggiudicato a ${data.lastBidder}`;
+      endedBanner.classList.remove('hidden');
+    } else {
+      endedBanner.classList.add('hidden');
+    }
+
+    render();
+  });
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function render() {
+    if (!latest.endTime) {
+      timerDisplay.textContent = latest.durationSeconds;
+      timerDisplay.className = 'timer';
+      return;
+    }
+    const now = Date.now() + serverOffset;
+    const remainingMs = latest.endTime - now;
+    const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+    timerDisplay.textContent = remainingSec;
+
+    let cls = 'timer';
+    if (remainingSec <= 5) cls += ' danger';
+    else if (remainingSec <= Math.max(10, latest.durationSeconds * 0.3)) cls += ' warn';
+    timerDisplay.className = cls;
+  }
+
+  setInterval(render, 200);
+
+  if (myName) {
+    showMain();
+  } else {
+    showLogin();
+  }
+</script>
+</body>
+</html>
